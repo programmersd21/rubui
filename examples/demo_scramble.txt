@@ -1,0 +1,19 @@
+# Demo Scramble Sequences
+#
+# Each line is a space-separated sequence of standard cube notation moves.
+# Use these with the command prompt (press : or /) in rubui.
+
+# Classic scramble
+R U R' U' R U2 R' U'
+
+# T-perm
+R U R' U' R' F R2 U' R' U' R U R' F'
+
+# Sexy move ×6 (returns to solved)
+R U R' U' R U R' U' R U R' U' R U R' U' R U R' U' R U R' U'
+
+# Long scramble
+F2 D L' U2 R B' D2 F R2 U' L D' B2 R' F U2 D' L2 B R' U F2 D L' B
+
+# Superflip (every edge flipped in place)
+U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2
