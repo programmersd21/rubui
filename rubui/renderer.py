@@ -309,10 +309,11 @@ class CubeRenderer:
         cube: Cube,
         layout: CubeLayout,
         *,
+        clip: tuple[int, int, int, int] | None = None,
         animation: AnimationState | None = None,
     ) -> None:
         if self.use_color:
-            self._render_color(buffer, cube, layout, animation=animation)
+            self._render_color(buffer, cube, layout, animation=animation, clip=clip)
         else:
             self._render_plain(buffer, cube, layout)
 
@@ -323,10 +324,11 @@ class CubeRenderer:
         layout: CubeLayout,
         *,
         animation: AnimationState | None,
+        clip: tuple[int, int, int, int] | None,
     ) -> None:
         state = animation.pre_state if animation else cube.state
         tiles = self._build_tiles(state, layout, animation)
-        clip = _clip_bounds(layout)
+        clip = _clip_bounds(layout) if clip is None else clip
 
         # draw far to near
         tiles.sort(key=lambda t: t["depth"], reverse=True)
@@ -473,6 +475,19 @@ def _clip_bounds(layout: CubeLayout) -> tuple[int, int, int, int]:
     return x0, y0, x1, y1
 
 
+def _intersect_clip(
+    a: tuple[int, int, int, int],
+    b: tuple[int, int, int, int],
+) -> tuple[int, int, int, int]:
+    ax0, ay0, ax1, ay1 = a
+    bx0, by0, bx1, by1 = b
+    x0 = max(ax0, bx0)
+    y0 = max(ay0, by0)
+    x1 = min(ax1, bx1)
+    y1 = min(ay1, by1)
+    return x0, y0, x1, y1
+
+
 # ── Banner ────────────────────────────────────────────────────────────────
 
 
@@ -565,19 +580,24 @@ def draw_frame(
     else:
         buffer.write(2, header_y, " ◆ rubui  |  Press ? for help  q to quit")
 
-    # Clear cube area only
+    # Clear cube area only (full content region to avoid rotation artifacts)
+    top_reserved = 1
+    bottom_reserved = 3
     layout = compute_layout(
         buffer.width,
         buffer.height,
         size_pref=size,
-        top_reserved=1,
-        bottom_reserved=3,
+        top_reserved=top_reserved,
+        bottom_reserved=bottom_reserved,
     )
-    clip = _clip_bounds(layout)
-    buffer.clear_rect(clip[0], clip[1], clip[2] - clip[0], clip[3] - clip[1])
+    content_clip = (0, top_reserved, buffer.width, buffer.height - bottom_reserved)
+    cube_clip = _clip_bounds(layout)
+    clip = _intersect_clip(cube_clip, content_clip)
+    clip_x0, clip_y0, clip_x1, clip_y1 = clip
+    buffer.clear_rect(clip_x0, clip_y0, clip_x1 - clip_x0, clip_y1 - clip_y0)
 
     renderer = CubeRenderer(use_color=use_color, theme_name=theme_name)
-    renderer.render(buffer, cube, layout, animation=animation)
+    renderer.render(buffer, cube, layout, animation=animation, clip=clip)
 
     # Last move and command line
     buffer.clear_line(info_y)
