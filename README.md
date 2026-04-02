@@ -11,6 +11,8 @@
 ╚═╝  ╚═╝ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝
 ```
 
+> *The demo gif might take some time to load... (it will appear below 👇)*
+
 ![Demo](demo/demo.gif)
 
 🤩 **Rubui** is a high-performance, fully 3D interactive Rubik's Cube simulator that runs **entirely in your terminal**. No GUI, no browser—just pure terminal wizardry.
